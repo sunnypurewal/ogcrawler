@@ -5,6 +5,19 @@ import dateparser
 import datetime
 import os
 import json
+import hashlib
+
+class Article(scrapy.Item):
+  id = scrapy.Field()
+  title = scrapy.Field()
+  description = scrapy.Field()
+  body = scrapy.Field()
+  url = scrapy.Field()
+  imgurl = scrapy.Field()
+  tags = scrapy.Field()
+  timestamp = scrapy.Field()
+  author = scrapy.Field()
+  pass
 
 class ArticleSpider(scrapy.Spider):
   name = "articlespider"
@@ -20,7 +33,7 @@ class ArticleSpider(scrapy.Spider):
         line = f.readline()
         yield scrapy.Request(url=obj["loc"])
 
-    def parse(self, response):
+  def parse(self, response):
     ogtype = response.xpath("//meta[@property='og:type']/@content").get()
     # if ogtype != "article": return
     paragraphs = response.xpath("//p")
@@ -78,13 +91,3 @@ class ArticleSpider(scrapy.Spider):
         if author is not None and len(author) > 0:
           item["author"] = author
         return item
-
-  def parse(self, response):
-    ogtype = response.xpath("//meta[@property='og:type']/@content").get()
-    # if ogtype != "article": return
-    paragraphs = response.xpath("//p")
-    candidatep = None
-    for paragraph in paragraphs:
-      siblings = paragraph.xpath("following-sibling::p")
-      print(f"This p has {len(siblings)} siblings")
-    print(paragraphs)
