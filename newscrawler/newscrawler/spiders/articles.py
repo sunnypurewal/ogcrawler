@@ -20,19 +20,64 @@ class ArticleSpider(scrapy.Spider):
         line = f.readline()
         yield scrapy.Request(url=obj["loc"])
 
-  # def parse(self, response):
-  #   links = response.xpath("//a")
-  #   print (f"{response.request.url} {len(links)} <a> elements")
-  #   for link in links:
-  #     url = link.xpath("@href").get()
-  #     urlcomponents = urllib.parse.urlparse(url)
-  #     if len(urlcomponents.scheme) > 0:
-  #       yield(scrapy.Request(url=url, 
-  #                            callback=self.parse_article))
-  #     elif len(urlcomponents.path) > 0:
-  #       yield(scrapy.Request(url=f"{response.request.url}{urlcomponents.path}", 
-  #                            call
-  #back=self.parse_article))
+    def parse(self, response):
+    ogtype = response.xpath("//meta[@property='og:type']/@content").get()
+    # if ogtype != "article": return
+    paragraphs = response.xpath("//p")
+    max = 0
+    article = None
+    for paragraph in paragraphs:
+      siblings = paragraph.xpath("parent::*/child::p")
+      if len(siblings) > max:
+        max = len(siblings)
+        article = paragraph.xpath("parent::*/child::p/text()").getall()
+    #use article instead of paragraphs from now on
+    if max > 0:
+      charcount = 0
+      wordcount = 0
+      for p in article:
+        charcount += len(p)
+        wordcount += len(p.split(" "))
+      if wordcount >= 150:
+        encodedurl = response.request.url.encode("utf-8")
+        m = hashlib.sha256(encodedurl)
+        id = m.hexdigest()
+        item = Article()
+        item["body"] = "\n".join(article)
+        item["url"] = response.request.url
+        item["id"] = id
+        published_time = response.xpath("//meta[@property='article:published_time'] | //meta[@property='og:article:published_time']").xpath("@content").get()
+        if published_time is None or len(published_time) == 0:
+          return        
+        item["timestamp"] = int(dateparser.parse(published_time).timestamp())
+        title = response.xpath("//meta[@property='og:title']/@content").get()
+        if title is None or len(title) == 0:
+          return
+        item["title"] = title
+        image = response.xpath("//meta[@property='og:image']/@content").get()
+        if image is not None and len(image) > 0:
+          item["imgurl"] = image
+        description = response.xpath("//meta[@property='description']").get()
+        if description is not None and len(description) > 0:
+          item["description"] = description
+        tags = response.xpath("//meta[@property='article:tag'] | //meta[@property='og:article:tag']")
+        if tags is not None and len(tags) > 0:
+          t = []
+          for tag in tags:
+            t.append(tag.xpath("@content").get().strip())
+          item["tags"] = t
+        else:
+          tags = response.xpath("//meta[@property='article:tags'] | //meta[@property='og:article:tags']")
+          if isinstance(tags, list):
+            t = []
+            for tagcsv in tags:
+              for tagv in tagcsv.split(","):
+                t.append(tagv.strip())
+            item["tags"] = t
+        author = response.xpath("//meta[@property='article:author'] | //meta[@property='article:author'] | //meta[@property='og:article:author'] | //meta[@property='og:article:author']").xpath("@content").get()
+        if author is not None and len(author) > 0:
+          item["author"] = author
+        return item
 
   def parse(self, response):
     ogtype = response.xpath("//meta[@property='og:type']/@content").get()
