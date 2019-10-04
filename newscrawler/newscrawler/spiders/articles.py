@@ -22,16 +22,15 @@ class Article(scrapy.Item):
 class ArticleSpider(scrapy.Spider):
   name = "articlespider"
 
+  def next_request(self):
+    with open("data/shuffle.urlset", "r") as f:
+      line = f.readline()
+      obj = json.loads(line)
+      yield scrapy.Request(url=obj["loc"])
+
   def start_requests(self):
     print ("Start Requests")
-    for filename in os.listdir("data/urlsets"):
-      path = os.path.join("data/urlsets", filename)
-      f = open(path)
-      line = f.readline()
-      while len(line) > 0:
-        obj = json.loads(line)
-        line = f.readline()
-        yield scrapy.Request(url=obj["loc"])
+    return self.next_request()
 
   def parse(self, response):
     ogtype = response.xpath("//meta[@property='og:type']/@content").get()
@@ -45,6 +44,7 @@ class ArticleSpider(scrapy.Spider):
         max = len(siblings)
         article = paragraph.xpath("parent::*/child::p/text()").getall()
     #use article instead of paragraphs from now on
+    print(article)
     if max > 0:
       charcount = 0
       wordcount = 0
@@ -90,4 +90,5 @@ class ArticleSpider(scrapy.Spider):
         author = response.xpath("//meta[@property='article:author'] | //meta[@property='article:author'] | //meta[@property='og:article:author'] | //meta[@property='og:article:author']").xpath("@content").get()
         if author is not None and len(author) > 0:
           item["author"] = author
-        return item
+        yield item
+        return self.next_request()

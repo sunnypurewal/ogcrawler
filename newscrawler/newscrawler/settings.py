@@ -13,17 +13,23 @@ BOT_NAME = 'newscrawler'
 
 SPIDER_MODULES = ['newscrawler.spiders']
 NEWSPIDER_MODULE = 'newscrawler.spiders'
-LOG_LEVEL = 'INFO'
+# LOG_LEVEL = 'INFO'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 USER_AGENT = 'ElectionNewsBot/1.0 (+http://electionsearch.ca)'
 
+FEED_URI = 'feed'
+FEED_FORMAT = 'jsonlines'
 # Obey robots.txt rules
 # ROBOTSTXT_OBEY = True
+COOKIES_ENABLED = False
+RETRY_ENABLED = False
+# REDIRECT_ENABLED = False
+# AJAXCRAWL_ENABLED = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-#CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 32
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
