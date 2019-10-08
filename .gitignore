@@ -1,6 +1,8 @@
 env
 .vscode
 .DS_Store
+data
+feed
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

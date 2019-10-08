@@ -23,7 +23,7 @@ class ArticleSpider(scrapy.Spider):
   name = "articlespider"
 
   def next_request(self):
-    with open("data/shuffle.urlset", "r") as f:
+    with open("data/recent.urlset", "r") as f:
       line = f.readline()
       obj = json.loads(line)
       yield scrapy.Request(url=obj["loc"])
@@ -91,4 +91,4 @@ class ArticleSpider(scrapy.Spider):
         if author is not None and len(author) > 0:
           item["author"] = author
         yield item
-        return self.next_request()
+        yield self.next_request()

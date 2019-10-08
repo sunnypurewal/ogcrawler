@@ -17,7 +17,7 @@ NEWSPIDER_MODULE = 'newscrawler.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-USER_AGENT = 'ElectionNewsBot/1.0 (+http://electionsearch.ca)'
+# USER_AGENT = 'ElectionNewsBot/1.0 (+http://electionsearch.ca)'
 
 FEED_URI = 'feed'
 FEED_FORMAT = 'jsonlines'
